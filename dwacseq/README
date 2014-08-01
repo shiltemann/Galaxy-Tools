@@ -1,0 +1,5 @@
+install the following perl modules:
+
+cpan
+install Math::Curve::Hilbert
+

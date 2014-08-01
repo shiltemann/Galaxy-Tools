@@ -1,0 +1,205 @@
+<tool id="cg_mkvcf" name="Make VCF" version="1.7.1">
+
+	<description>Converts masterVar and/or junction files to VCF.</description> 
+
+	<requirements>		
+		<requirement type="package" version="1">cgatools17</requirement>
+	</requirements>
+
+	<command> <!--run executable-->
+		cgatools | head -1;
+		cgatools mkvcf --beta 
+		--reference ${crr.fields.crr_path} 		
+		--output $output 
+		$nc
+		--calibration-root ${crr.fields.calibration_root} 
+		#if $varfiles 
+			#if $junctionfiles <!-- masterVar and SV -->
+				--source-names masterVar,SV				
+				#for $v in $varfiles 
+					--master-var ${v.input}
+				#end for
+				#for $j in $junctionfiles 
+					--junction-file ${j.input}
+				#end for
+
+			#else <!-- masterVar only -->
+				--source-names masterVar
+				#for $v in $varfiles 
+					--master-var ${v.input}
+				#end for
+			#end if
+		#else 
+			#if $junctionfiles <!-- SV only -->
+				--source-names SV
+				#for $j in $junctionfiles 
+					--junction-file ${j.input}
+				#end for
+			#end if	
+		#end if		
+		#if $more_options.options_type_selector == "more"
+			--junction-score-threshold $jst
+			--junction-side-length-threshold $jslt
+			--junction-distance-tolerance $jdt
+			--junction-length-threshold $jlt
+			$jnp
+			$jthc
+		#end if
+	</command>
+  
+	<inputs>
+		<!-- reference crr -->
+		<param name="crr" type="select" label="Reference Build">
+			<options from_data_table="cg_anno_files" />
+		</param>	
+		  
+		<!--form field to select masterVar files-->
+		<repeat name="varfiles" title="MasterVar files">
+			<param name="input" type="data" format="tabular" label="Dataset"/>
+		</repeat>				
+
+		<!--form field to select junction files-->
+		<repeat name="junctionfiles" title="Junctions files">
+			<param name="input" type="data" format="tabular" label="Dataset"/>
+		</repeat>		
+
+		<param name="nc" type="boolean" truevalue="--include-no-calls" falsevalue="" selected="False" label="Include no-calls?" help="Include small variants VCF records for loci that are no-called across all input genomes"/>
+
+		<!-- advanced settings  -->
+		<conditional name="more_options">
+	   		<param name="options_type_selector" type="select" label="Advanced Options">
+				<option value="hide" selected="True">Hide</option>
+				<option value="show">Show</option>
+	   		</param>
+	   		<when value="hide">
+				<!-- no options -->
+	   		</when>
+	   		<when value="show">
+		 		<param name="jst" type="text" value="10" label="Junction Score Threshold" help="Minimum number of discordant mate pairs for a junction that is required to be labeled as PASS in the FT record"/>
+				<param name="jslt" type="text" value="70" label="Junction Side Length Threshold" help="Minumum junction side length for a reported junction that is required to be labeled as PASS in the FT record"/>
+	   			<param name="jdt" type="text" value="200" label="Junction Distance Tolerance" help="Maximum allowed distance between junctions considered to match (i.e. potentially reflect the same evolutionary event)"/>
+	   			<param name="jlt" type="text" value="500" label="Junction Length Threshold" help="Maxumum length between breakpoints terquired to call an intrachromosomal junction"/>
+	   			<param name="jnp" type="boolean" truevalue="--junction-normal-priority" falsevalue="" selected="false" label="Junction Normal Priority" help="Normal junction priority for VCF output. Should be used only when comparing two genomes, a tumour and its matched normal"/>
+	   			<param name="jthc" type="boolean" truevalue="--junction-tumor-hc" falsevalue="" selected="false" label="Junction Tumour High Confidence" help="Output only high confidence junctions from the second of two genomes. Useful as a means of identifying a set of high-confidence somatic junctions."/>
+	   			
+	   		</when>
+		</conditional>
+
+		<!-- prefix for output file so you dont have to manually rename history items -->
+	   	<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>	
+	</inputs>
+	<outputs>
+		<data format="vcf" name="output" label="$fname ${tool.name} on ${on_string}"/>
+	</outputs>
+  
+  
+	<help>
+**What it does**
+
+This tool joins two tab-delimited files based on equal fields or overlapping regions.
+
+**cgatools 1.7.1 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+	COMMAND NAME
+		mkvcf - Converts var file(s) or masterVar file(s) to VCF.
+
+	DESCRIPTION
+		Converts var file(s) or masterVar file(s) to VCF.
+
+	OPTIONS
+	  -h [ --help ] 
+		    Print this help message.
+
+	  --beta 
+		    This is a beta command. To run this command, you must pass the --beta 
+		    flag.
+
+	  --reference arg
+		    The reference crr file.
+
+	  --output arg (=STDOUT)
+		    The output file (may be omitted for stdout).
+
+	  --field-names arg (=GT,PS,NS,AN,AC,SS,FT,CGA_XR,CGA_FI,GQ,HQ,EHQ,CGA_CEHQ,GL,
+	  					CGA_CEGL,DP,AD,CGA_RDP,CGA_ODP,CGA_OAD,CGA_ORDP,CGA_PFAM,
+	  					CGA_MIRB,CGA_RPT,CGA_SDO,CGA_SOMC,CGA_SOMR,CGA_SOMS,GT,CGA_GP,
+	  					CGA_NP,CGA_CP,CGA_PS,CGA_CT,CGA_TS,CGA_CL,CGA_LS,CGA_SCL,CGA_SLS,
+	  					CGA_LAF,CGA_LLAF,CGA_ULAF,GT,FT,CGA_IS,CGA_IDC,CGA_IDCL,CGA_IDCR,
+	  					CGA_RDC,CGA_NBET,CGA_ETS,CGA_KES,GT,FT,CGA_BF,CGA_MEDEL,MATEID,
+	  					SVTYPE,CGA_BNDG,CGA_BNDGO,CGA_BNDMPC,CGA_BNDPOS,CGA_BNDDEF,CGA_BNDP)
+		    Comma-separated list of field names. By default, all fields are 
+		    included, but you may override this option to ensure only a subset of 
+		    the fields is included in the VCF output. For a description of each 
+		    field, see the cgatools user guide.
+
+	  --source-names arg (=masterVar,CNV,SV,MEI)
+		    Comma-separated list of source names. The following source names are 
+		    available:
+		      masterVar - Includes records extracted from the masterVar file.
+		      CNV       - Includes CNV-related records.
+		      SV        - Includes records derived from junctions files.
+		      MEI       - Includes records describing mobile element insertions.
+		    Some of these source types are only available for more recent pipeline 
+		    versions, and some of these source types do not support multi-genome 
+		    VCFs. For more information about which source types are available for 
+		    which versions of the Complete Genomics pipeline software, see the 
+		    cgatools user guide.
+
+	  --genome-root arg
+		    For each genome to include in the VCF, the genome root directory, for 
+		    example /data/GS00118-DNA_A01; this directory is expected to contain 
+		    the ASM and LIB subdirectories, for example. You must supply this 
+		    option for each genome in the VCF, unless you are using 
+		    --source-names=masterVar and you have specified the --master-var option
+		    for each genome in the VCF.
+
+	  --master-var arg
+		    For each genome to include in the VCF, the masterVar file. If 
+		    genome-roots parameter is given, this parameter defaults to the 
+		    masterVar in the given genome-root.
+
+	  --include-no-calls 
+		    Small variants VCF records include loci that have no 
+		    reference-inconsistent calls.
+		    
+
+	  --calibration-root arg
+		    The directory containing calibration data. For example, there should 
+		    exist a file calibration-root/0.0.0/metrics.tsv. This option is only 
+		    required if CGA_CEHQ or CGA_CEGL are included in the --field-names 
+		    parameter.
+
+	  --junction-file arg
+		    For each genome to include in the VCF, the junctions file. If 
+		    genome-roots parameter is given, this parameter defaults to the 
+		    respective junctions file in the export directory.
+
+	  --junction-score-threshold arg (=10)
+		    Junction score thresholds (discordant mate pair count).
+
+	  --junction-side-length-threshold arg (=70)
+		    Junction side length threshold.
+
+	  --junction-distance-tolerance arg (=200)
+		    Distance tolerance for junction compatibility.
+
+	  --junction-length-threshold arg (=500)
+		    Length threshold for compatible junctions.
+
+	  --junction-normal-priority 
+		    Normal junction priority for vcf output.
+
+	  --junction-tumor-hc 
+		    use high confidence junctions for tumors.
+
+
+	SUPPORTED FORMAT_VERSION
+		0.3 or later
+	</help>
+</tool>

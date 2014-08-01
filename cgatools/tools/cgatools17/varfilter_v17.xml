@@ -1,0 +1,140 @@
+<tool id="cg_varfilter" name="VarFilter" version="1.7.1">
+
+	<description>Copies input file, applying filters.</description> 
+
+	<requirements>		
+		<requirement type="package" version="1">cgatools17</requirement>
+	</requirements>
+
+	<command interpreter="perl">  	
+		varfilter_wrapper.pl
+		--reference ${crr.fields.crr_path}
+		--output $output
+		--input $file_types.input
+		#for $f in $filters
+			--zygosity $f.zygosity
+			--vartype $f.vartype
+			--varscorevaf x$f.varscorevaf
+			--varscoreeaf x$f.varscoreeaf
+			--varquality $f.varquality
+		#end for
+	</command>
+	<inputs>
+		<!--form field to select crr file-->
+		<param name="crr" type="select" label="Reference Build">
+			<options from_data_table="cg_anno_files" />
+		</param>
+	
+		<!--conditional to select input file type-->
+		<conditional name="file_types">
+			<param name="file_type" type="select" label="Select the input file type">
+				<option value="var" selected="true">var files</option>
+				<option value="mastervar">mastervar files</option>
+			</param>
+			<when value="var">	
+				<param name="input" type="data" format="cg_var" label="Var file"/>
+			</when>			
+			<when value="mastervar">						
+				<param name="input" type="data" format="cg_mastervar" label="Mastervar file"/>
+			</when>
+		</conditional>
+		
+		<!-- formfields to add filters -->
+		<repeat name="filters" title="Filter">
+			<param name="zygosity" type="select" label="Filter out call (set to no-call) IF locus IS">
+				<option value="NA">- all loci -</option>
+				<option value="hom">homozygous</option>
+				<option value="het">heterzygous</option>
+			</param>
+			<param name="vartype" type="select" label="AND varType IS">
+				<option value="NA">- any varType -</option>
+				<option value="snp">snp</option>
+				<option value="ins">ins</option>
+				<option value="del">del</option>
+				<option value="sub">sub</option>
+				<option value="ref">ref</option>
+			</param>
+			<param name="varscorevaf" type="text" label="AND varScoreVAF IS LESS THAN"/>
+			<param name="varscoreeaf" type="text" label="AND varScoreEAF IS LESS THAN"/>
+			<param name="varquality" type="select" label="AND varQuality IS NOT">
+				<option value="NA"> </option>
+				<option value="VQHigh">VQHigh</option>
+				<option value="VQLOW">VQLOW</option>
+			</param>
+		</repeat>
+
+		<!-- prefix for output file so you dont have to manually rename history items -->
+		<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>	
+	</inputs>
+
+	<outputs>
+		<data format="cg_var" name="output" label="$fname ${tool.name} on ${on_string}" />
+	</outputs>
+
+	<help>
+	  
+**What it does**
+
+This tool copies input var file or masterVar file to output, applying specified filters.
+
+**cgatools 1.7.1 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+		COMMAND NAME
+		  varfilter - Copies input var file or masterVar file to output, applying
+		  specified filters.
+		
+		DESCRIPTION
+		  Copies input var file or masterVar file to output, applying specified 
+		  filters (which are available to all cgatools commands that read a var file 
+		  or masterVar file as input). Filters are specified by appending the filter 
+		  specification to the var file name on the command line. For example:
+				
+		  /path/to/var.tsv.bz2#varQuality!=VQHIGH
+				
+		  The preceding example filters out any calls marked as VQLOW. The filter 
+		  specification follows the "#" sign, and consists of a list of filters to 
+		  apply, separated by a comma. Each filter is a colon-separated list of call 
+		  selectors. Any scored call that passes all the colon-separated call 
+		  selectors for one or more of the comma-separated filters is turned into a 
+		  no-call. The following call selectors are available:
+				
+		    hom             Selects only calls in homozygous loci.
+		    het             Selects any scored call not selected by the hom selector.
+		    varType=XX      Selects calls whose varType is XX.
+		    varScoreVAF&lt;XX  Selects calls whose varScoreVAF&lt;XX.
+		    varScoreEAF&lt;XX  Selects calls whose varScoreEAF&lt;XX.
+		    varQuality!=XX  Selects calls whose varQuality is not XX.
+				
+		  Here is an example that filters homozygous SNPs with varScoreVAF &lt; 25 and 
+		  heterozygous insertions with varScoreEAF &lt; 50:
+				
+				
+		  '/path/to/var.tsv.bz2#hom:varType=snp:varScoreVAF&lt;25,het:varType=ins:varScoreEAF&lt;50'
+				
+		
+		OPTIONS
+		  -h [ --help ]
+		      Print this help message.
+		
+		  --beta
+		      This is a beta command. To run this command, you must pass the --beta flag.
+		
+		  --reference arg
+		      The reference crr file.
+		
+		  --input arg
+		      The input var file or masterVar file (typically with filters specified).
+		
+		  --output arg (=STDOUT)
+		      The output file (may be omitted for stdout).
+		
+		SUPPORTED FORMAT_VERSION
+		  0.3 or later
+	</help>
+</tool>

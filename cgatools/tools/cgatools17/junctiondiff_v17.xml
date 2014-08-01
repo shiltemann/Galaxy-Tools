@@ -1,0 +1,127 @@
+<tool id="cg_junctiondiff" name="JunctionDiff" version="1.7.1">
+
+	<description>Reports difference between junction calls</description> <!--adds description in toolbar-->
+
+	<requirements>		
+		<requirement type="package" version="1">cgatools17</requirement>
+	</requirements>
+
+	<command > <!--run executable-->
+		cgatools | head -1;
+		cgatools junctiondiff --beta 
+		--reference ${crr.fields.crr_path} 
+		--junctionsA $inputA 
+		--junctionsB $inputB 
+		--scoreThresholdA $scoreA
+		--scoreThresholdB $scoreB
+		--distance $distance
+		--minlength $minlength
+		$stat  
+		--output-prefix cg_ 
+		;
+		mv cg_diff-* cg_diff.tsv
+	</command>
+
+	<inputs>		
+		<!-- reference -->
+		<param name="crr" type="select" label="Reference Build">
+			<options from_data_table="cg_anno_files" />
+		</param>				
+
+		<!--input files-->
+		<param name="inputA" type="data" format="tabluar" label="Junction file A"/>			
+		<param name="inputB" type="data" format="tabluar" label="Junction file B"/>		
+		
+		<!--parameters-->
+		<param name="stat" type="select" label="Print input file stats">
+			<option value="">no</option>
+			<option value="--statout">yes</option>
+		</param>
+
+		<param name="scoreA" type="integer" label="Score threshold value for input file A (default 10)" value="10"/>
+		<param name="scoreB" type="integer" label="Score threshold value for input file B (default 0)" value="0"/>
+		<param name="distance" type="integer" label="Max distance between coordinates of potentially compatible junctions (default 200)" value="200"/>
+		<param name="minlength" type="integer" label="Minimum deletion junction length to be included into the difference file (default 500)" value="500"/>
+	
+		<!-- prefix for output file so you dont have to manually rename history items -->
+		<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>	
+	</inputs>
+
+	<outputs>
+		<data format="tabular" name="output1" from_work_dir="cg_diff.tsv" label="$fname ${tool.name} on ${on_string}: diff"/>
+		<data format="tabular" name="output2" from_work_dir="cg_report.tsv" label="$fname ${tool.name} on ${on_string}: report">
+			<filter>(stat == '--statout')</filter>
+		</data>
+	</outputs>
+  
+
+	<help>
+**What it does**
+
+This tool reports difference between junction calls of Complete Genomics junctions files
+
+**cgatools 1.7.1 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+		COMMAND NAME
+		  junctiondiff - Reports difference between junction calls of Complete Genomics junctions files.
+		
+		DESCRIPTION
+		  junctiondiff takes two junction files A and B as input and produces the 
+		  following output:
+		    - "diff-inputFileName" - the junctions from an input file A that are not 
+		      present in input file B.
+		    - "report.txt" - a brief summary report (if --statout is used)
+				
+		  Two junctions are considered equivalent if:
+		    - they come from different files
+		    - left and right positions of one junction are not more than "--distance"
+		      bases apart from the corresponding positions of another junction
+		    - the junction scores are equal or above the scoreThreshold
+		    - they are on the same strands
+		
+		OPTIONS
+		  -h [ --help ] 
+		      Print this help message.
+		
+		  --beta 
+		      This is a beta command. To run this command, you must pass the --beta 
+		      flag.
+		
+		  -s [ --reference ] arg
+		      Reference file.
+		
+		  -a [ --junctionsA ] arg
+		      input junction file A.
+		
+		  -b [ --junctionsB ] arg
+		      input junction file B.
+		
+		  -A [ --scoreThresholdA ] arg (=10)
+		      score threshold value for the input file A.
+		
+		  -B [ --scoreThresholdB ] arg (=0)
+		      score threshold value for the input file B.
+		
+		  -d [ --distance ] arg (=200)
+		      Max distance between coordinates of potentially compatible junctions.
+		
+		  -l [ --minlength ] arg (=500)
+		      Minimum deletion junction length to be included into the difference 
+		      file.
+		
+		  -o [ --output-prefix ] arg
+		      The path prefix for all the output reports.
+		
+		  -S [ --statout ] 
+		      (Debug) Report various input file statistics. Experimental feature.
+		
+		SUPPORTED FORMAT_VERSION
+		  1.5 or later
+	</help>
+</tool>

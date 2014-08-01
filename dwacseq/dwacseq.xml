@@ -1,0 +1,142 @@
+<tool id="dwacseq" name="DWAC-Seq" version="0.7" >
+
+  <description> Dynamic Window Approach for CNV analysis </description>
+
+ <requirements>
+    <requirement type="set_environment">DWACSEQ_SCRIPT_PATH</requirement>	    
+</requirements>
+  
+  <command interpreter="bash"> 
+  	dwacseq.sh 
+		$testbam 
+		$refbam
+		$chromosome
+		$chrprefix
+		$format
+		$amb
+		$scale
+		$finetuning
+		$gwn	
+		$removeclonal
+		\$DWACSEQ_SCRIPT_PATH
+  </command>
+
+  
+  <inputs>
+
+	<param name="testbam" type="data" format="bam" label="Select input bamfile" help="Sorted BAM file for test set"/>	
+	<param name="refbam"  type="data" format="bam" label="Select reference bamfile" help="Sorted BAM file for reference set"/>
+	<param name="chromosome" type="select" label="Select Chromosome">
+		<option value="all" selected="true"> Select Chromosome </option>
+		<option value="chr1"> chr1 </option>
+		<option value="chr2"> chr2 </option>
+		<option value="chr3"> chr3 </option>
+		<option value="chr4"> chr4 </option>
+		<option value="chr5"> chr5 </option>
+		<option value="chr6"> chr6 </option>
+		<option value="chr7"> chr7 </option>
+		<option value="chr8"> chr8 </option>
+		<option value="chr9"> chr9 </option>
+		<option value="chr10"> chr10 </option>
+		<option value="chr11"> chr11 </option>
+		<option value="chr12"> chr12 </option>
+		<option value="chr13"> chr13 </option>
+		<option value="chr14"> chr14 </option>
+		<option value="chr15"> chr15 </option>
+		<option value="chr16"> chr16 </option>
+		<option value="chr17"> chr17 </option>
+		<option value="chr18"> chr18 </option>
+		<option value="chr19"> chr19 </option>
+		<option value="chr20"> chr20 </option>
+		<option value="chr21"> chr21 </option>
+		<option value="chr22"> chr22 </option>
+		<option value="chrX"> chrX </option>
+		<option value="chrY"> chrY </option>
+		<option value="chrM"> chrM </option>
+   	</param>
+   	<param name="chrprefix" type="boolean" truevalue="Y" falsevalue="N" checked="false" label="This BAM file uses a chr prefix to indicate chromosome names"/>
+	<param name="format" type="select" label="Output Format">
+		<option value="wig"> wig </option>
+		<option value="vcf"> vcf </option>		
+    </param>
+
+	
+	<param name="amb"          type="text"    value="10"                                                                label="Mapping Ambiguity"   help="Max best mapping positions per read)"/>
+	<param name="scale"        type="text"    value="1000"                                                              label="Scale"               help="Number of reads per window"/>
+	<param name="gwn"          type="boolean" falsevalue="None" truevalue="--genome_wide_normalization" checked="false" label="Genome-wide normalization?"    help="Optional. Recommended for cancer samples"/>	
+	<param name="finetuning"   type="boolean" falsevalue="--no_fine_tuning" truevalue="None" checked="true"             label="Advanced: Use fine-tuning?"/>
+	<param name="removeclonal" type="boolean" falsevalue="None" truevalue="--remove_clonal"  checked="false"            label="Advanced: Remove Clonal?" help="removes duplicate reads, mapped to the same chromosomal position"/>
+	<param name="fprefix" type="text" value="" label="Optional: prefix for output file"/>	
+  </inputs>
+
+
+  <outputs>  	
+	<data format="tabular" name="windows"     from_work_dir="windows_output"     label="${fprefix} DWACSeq Windows on ${on_string}"  />
+	<data format="tabular" name="avg4hilbert" from_work_dir="avg4hilbert_output" label="${fprefix} DWACSeq Avg4Hilbert on ${on_string}"  />
+	<data format="tabular" name="segmented"   from_work_dir="segmented_output"   label="${fprefix} DWACSeq Segmented on ${on_string}"  />
+	<data format="tabular" name="tuned"       from_work_dir="tuned_output"       label="${fprefix} DWACSeq Tuned on ${on_string}"  />
+  </outputs>
+
+
+  <help>
+  
+
+**What it does**::
+
+	DWAC-seq Dynamic Window Approach for CNV detection using sequencing tag density
+
+	
+	The output will contain 4 files for each chromosome.
+
+	1) windows.*
+  	This file contains data on the number of reads in the test and reference samples. Format: region_start region_end number_of_reads_in_test number_of_reads_in_reference
+
+	2) avg4hilbert.*
+  	This file contains filtered from noise, segmented and normalized ratio of test and reference reads. It is subject to Hilbert visualization tool. Format: region_start region_end ratio
+
+	3) segmented.*
+  	This file gives an overview of the copy number ratios over whole chromosome by joining segments with the same value. Format: region_start region_end ratio
+
+	4) tuned.*
+  	This file gives copy number variation in order of decreasing significance. Format: region_start region_end ratio number_of_reads_in_test number_of_reads_in_reference 
+	
+
+	NOTE: it is not recommended to change the advanced parameters unless you know what you are doing.
+
+
+
+**Command line reference**::
+
+	DWAC-Seq v. 0.7
+	Dynamic Window Approach for CNV calling using Sequencing data
+
+	Main options:
+        --test test_bam         Sorted and indexed BAM file for test set
+        --ref ref_bam           Same for reference set
+        --chr chromosome_name   Chromosome name
+        --amb ambiguity (optional, default 10)    Mapping ambiguity (max best mapping positions per read)
+        --scale reads (optional, default 1000)  Number of reads per window
+
+	Output options:
+	--output prefix  Prefix for output files
+	--output_format format Output format: wig(default), vcf
+	--skip_ratios ration_from,ratio_to Do not report segments with ratios between given
+
+	Advanced options:
+    --no_fine_tuning (the results are not fine tuned if present)
+	--genome_wide_normalization (optional, recommended for cancer samples. Default = chromosome-wide)
+	--remove_clonal (removes duplicate reads, mapped to the same chromosomal position)
+	--fixed_window size_bp use fixed-size windows instead 
+	--normal_ratio ratio, specify normlaization ratio (test/reference)t
+	--read_length size_bp>, skip all reads that are shorter than specified
+	--test_strand [watson|crick], consider only one strand (for Strand-Seq data analysis) 
+	--ref_strand [watson|crick], consider only one strand (for Strand-Seq data analysis)
+	
+	Options for exome enrichment sets
+	--design_file BED_file (optional, only considers ranges given in the design file)
+	--window_is_target (optional)
+	Note: design_file option can be combined with fixed/dynamic window approaches
+
+
+  </help>
+</tool>

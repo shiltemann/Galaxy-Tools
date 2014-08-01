@@ -1,0 +1,150 @@
+<tool id="cg_snpdiff" name="SNPDiff" version="1.7.1">
+
+	<description>compares snp calls to a Complete Genomics variant file.</description> 
+
+	<requirements>		
+		<requirement type="package" version="1">cgatools17</requirement>
+	</requirements>
+	
+	<command> 
+		cgatools | head -1;
+		cgatools snpdiff 
+		--reference ${crr.fields.crr_path} 
+		--variants $varfile
+		--genotypes $genotype
+		--output-prefix cg_
+		--reports `echo ${report1} ${report2} ${report3} | sed 's/  */,/g'` 
+	</command>
+
+	<inputs>
+		<param name="crr" type="select" label="Reference build">
+			<options from_data_table="cg_anno_files" />
+		</param>
+		<param name="varfile" type="data" format="cg_var" label="Var file"/>						
+
+		<param name="genotype" type="data" format="tabular" label="Genotypes file with SNP calls" help="The genotypes file is a tab-delimited file with at least the following columns (additional columns may be given): Chromosome (Required), Offset0Based (Required), GenotypesStrand (Optional), Genotypes (Optional)"/>
+			
+		<param name="report1" type="select" label="Create report Output">
+			<option value="">no</option>
+			<option value="Output">yes</option>
+		</param>
+		<param name="report2" type="select" label="Create report Verbose">
+			<option value="">no</option>
+			<option value="Verbose">yes</option>
+		</param>
+		<param name="report3" type="select" label="Create report Stats">
+			<option value="">no</option>
+			<option value="Stats">yes</option>
+		</param>
+		<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>		
+	</inputs>
+
+	<outputs>
+		<data format="tabular" name="output1" from_work_dir="cg_Output.tsv" label="$fname ${tool.name} on ${on_string}: Output">
+			<filter>(report1 == 'Output')</filter>
+		</data>
+		<data format="tabular" name="output2" from_work_dir="cg_Verbose.tsv" label="$fname ${tool.name} on ${on_string}: Verbose">
+			<filter>(report2 == 'Verbose')</filter>
+		</data>
+		<data format="tabular" name="output3" from_work_dir="cg_Stats.tsv" label="$fname ${tool.name} on ${on_string}: Stats">
+			<filter>(report3 == 'Stats')</filter>
+		</data>
+	</outputs>
+	<help>
+**What it does**
+
+This tool ompares snp calls to a Complete Genomics variant file.
+
+**cgatools 1.7.1 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+		COMMAND NAME
+		  snpdiff - Compares snp calls to a Complete Genomics variant file.
+		
+		DESCRIPTION
+		  Compares the snp calls in the "genotypes" file to the calls in a Complete 
+		  Genomics variant file. The genotypes file is a tab-delimited file with at 
+		  least the following columns (additional columns may be given):
+				
+		    Chromosome      (Required) The name of the chromosome.
+		    Offset0Based    (Required) The 0-based offset in the chromosome.
+		    GenotypesStrand (Optional) The strand of the calls in the Genotypes 
+		                    column (+ or -, defaults to +).
+		    Genotypes       (Optional) The calls, one per allele. The following 
+		                    calls are recognized:
+		                    A,C,G,T A called base.
+		                    N       A no-call.
+		                    -       A deleted base.
+		                    .       A non-snp variation.
+				
+		  The output is a tab-delimited file consisting of the columns of the 
+		  original genotypes file, plus the following additional columns:
+				
+		    Reference         The reference base at the given position.
+		    VariantFile       The calls made by the variant file, one per allele. 
+		                      The character codes are the same as is described for 
+		                      the Genotypes column.
+		    DiscordantAlleles (Only if Genotypes is present) The number of 
+		                      Genotypes alleles that are discordant with calls in 
+		                      the VariantFile. If the VariantFile is described as 
+		                      haploid at the given position but the Genotypes is 
+		                      diploid, then each genotype allele is compared 
+		                      against the haploid call of the VariantFile.
+		    NoCallAlleles     (Only if Genotypes is present) The number of 
+		                      Genotypes alleles that were no-called by the 
+		                      VariantFile. If the VariantFile is described as 
+		                      haploid at the given position but the Genotypes is 
+		                      diploid, then a VariantFile no-call is counted twice.
+				
+		  The verbose output is a tab-delimited file consisting of the columns of the
+		  original genotypes file, plus the following additional columns:
+				
+		    Reference   The reference base at the given position.
+		    VariantFile The call made by the variant file for one allele (there is 
+		                a line in this file for each allele). The character codes 
+		                are the same as is described for the Genotypes column.
+		    [CALLS]     The rest of the columns are pasted in from the VariantFile,
+		                describing the variant file line used to make the call.
+				
+		  The stats output is a comma-separated file with several tables describing 
+		  the results of the snp comparison, for each diploid genotype. The tables 
+		  all describe the comparison result (column headers) versus the genotype 
+		  classification (row labels) in different ways. The "Locus classification" 
+		  tables have the most detailed match classifications, while the "Locus 
+		  concordance" tables roll these match classifications up into "discordance" 
+		  and "no-call". A locus is considered discordant if it is discordant for 
+		  either allele. A locus is considered no-call if it is concordant for both 
+		  alleles but has a no-call on either allele. The "Allele concordance" 
+		  describes the comparison result on a per-allele basis.
+		
+		OPTIONS
+		  -h [ --help ] 
+		      Print this help message.
+		
+		  --reference arg
+		      The input crr file.
+		
+		  --variants arg
+		      The input variant file.
+		
+		  --genotypes arg
+		      The input genotypes file.
+		
+		  --output-prefix arg
+		      The path prefix for all output reports.
+		
+		  --reports arg (=Output,Verbose,Stats)
+		      Comma-separated list of reports to generate. A report is one of:
+		        Output  The output genotypes file.
+		        Verbose The verbose output file.
+		        Stats   The stats output file.
+						
+		SUPPORTED FORMAT_VERSION
+		  0.3 or later
+	</help>
+</tool>

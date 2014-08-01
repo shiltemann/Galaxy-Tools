@@ -1,0 +1,32 @@
+<tool id="tv2vcf" name="TestVariants-2-VCF" version="v2">
+
+	<description> Convert CG MasterVar format to VCF format </description>
+
+	<command interpreter="perl">
+		testvariants2VCF-v2.pl $testvarIn $reference > $output 
+	</command>
+	
+	<inputs>
+		<param name="testvarIn" type="data" format="tsv" label="TestVariants file to be converted to VCF"/>		
+		<param name="refs" type="select" label="Reference Build">
+			<options from_data_table="cg_anno_files" />
+		</param>
+	</inputs>
+
+	<outputs>
+		<data format="vcf" name="output" label="${tool.name} on ${on_string}"/>
+	</outputs>
+
+	<help> 
+This program converts the output of the cgatools *testvariants* command into a multi-sample VCF file. 
+
+Variants that share the same location (chr,begin,end) will be merged into one locus and their flags (0,1,N) will be converted into genotype calls. 
+Samples that are positive for more than two alleles within the same locus will be flagged and their genotype calls set to unknown (./.). 
+For a non-SNP locus, the VCF format requires that an extra reference base immediately upstream of the variant locus be included in the REF and ALT columns.
+
+Author: Zuoming Deng, zdeng@completegenomics.com
+
+	</help>
+</tool>
+
+

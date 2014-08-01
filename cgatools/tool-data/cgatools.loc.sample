@@ -1,0 +1,6 @@
+# loc file for all files needed by CGATools
+#
+# <columns> value, dbkey, name, crr_path, repmask_path, genedata_path, segdup_path, calibration_root </columns>
+
+#hg18	hg18	build 36 [Human Mar. 2006 (NCBI36/hg18)]	/path/to/build36.crr	/path/to/rmsk36.tsv	/path/to/gene36.tsv	/path/to/segdup36.tsv	/path/to/var-calibration-v2/	
+#hg19	hg19	build 37 [Human Feb. 2009 (GRCh37/hg19)]	/path/to/build37.crr	/path/to/rmsk37.tsv	/path/to/gene37.tsv	/path/to/segdup37.tsv	/path/to/var-calibration-v2/	

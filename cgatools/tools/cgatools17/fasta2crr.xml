@@ -1,0 +1,70 @@
+<tool id="fasta2crr" name="fasta-2-crr" version="1.7.1">
+	<description> Convert fasta sequences into a single reference crr file </description>
+	
+	<requirements>		
+		<requirement type="package" version="1">cgatools17</requirement>
+	</requirements>
+	
+	<command>
+		cgatools | head -1;
+		cgatools fasta2crr  
+		#for $f in $fastafiles
+			--input ${f.file}
+		#end for 		
+		--output $output 
+		#if $circ != "None"
+		--circular $circ 
+		#end if	
+	</command>
+	
+	<inputs>
+		<repeat name="fastafiles" title="FASTA File" min="1">
+			<param name="file" type="data" format="tsv" label="select input fasta file" />
+		</repeat>
+		<param name="circ" type="data" format="tsv,bz2" optional="true" label="select file containing comma-separated list of circular chromosome names"/>		
+		<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>					
+	</inputs>
+
+	<outputs>
+		<data format="crr" name="output" label="$fname ${tool.name} on ${on_string}"/>
+	</outputs>
+	
+	<help> 	
+
+**What it does**
+
+This tool converts input FASTA sequences into a single reference CRR file.
+
+**cgatools 1.7.1 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-release-notes.pdf
+
+**Command line reference**::
+	
+		COMMAND NAME
+		  fasta2crr - Converts fasta reference files to the crr format.
+
+		OPTIONS
+		  -h [ --help ] 
+				Print this help message.
+
+		  --input arg
+				The input fasta files (may be passed in as arguments at the end of the 
+				command, or omitted for stdin). Take care to specify the fasta files in
+				chromosome order; ordering is important. To work with human Complete 
+				Genomics data, the chromosome order should be chr1...chr22, chrX, chrY,
+				chrM.
+
+		  --output arg
+				The output crr file.
+
+		  --circular arg
+				A comma-separated list of circular chromosome names. If ommitted, 
+				defaults to chrM.
+
+	</help>
+</tool>
+
+

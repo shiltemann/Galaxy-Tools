@@ -1,0 +1,62 @@
+<tool id="condel" name="Condel" version="1">
+	<description> Run Condel on SIFT, PolyPhen2 and MutationAssessor scores </description>
+	<command interpreter="bash">
+		condel.sh $infile $col_sift $col_polyphen $mutass.col_mutass $outfile \$CONDEL_SCRIPT_PATH/bin/was_SP.pl \$CONDEL_SCRIPT_PATH/bin/was_SPM.pl \$CONDEL_SCRIPT_PATH/config \$CONDEL_SCRIPT_PATH/bin/cgatools17 
+	</command>
+	
+	<requirements>
+	    <requirement type="set_environment">CONDEL_SCRIPT_PATH</requirement>	    
+	</requirements>
+
+	<inputs>				
+		
+		<param name="infile" 	  	type="data" 		  label="Select file to annotate" help="must be a tab-separated file with a 1 line header"/>
+		<param name="col_sift"     	type="data_column"    data_ref="infile" label="SIFT Score Column"  /> 
+		<param name="col_polyphen" 	type="data_column"    data_ref="infile" label="Polyphen2 Score Column"  /> 	
+		<conditional name="mutass">
+			<param name="domutass" type="select"  label="Include MutationAssessor score?" >
+				<option value="N" selected="true" > no </option>
+				<option value="Y" > yes </option>
+			</param>
+			<when value="Y">
+				<param name="col_mutass" 	type="data_column"    data_ref="infile" optional="true" label="Mutation Assessor Score Column"  help="FI column in MutationAssessor output"/>
+			</when>
+			<when value="N">
+				<param name="col_mutass" 	type="hidden"    value="None"/>
+			</when>
+		</conditional>
+		
+		<!-- prefix for output file so you dont have to manually rename history items -->
+		<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>				 		
+				
+	</inputs>
+
+  <outputs>
+      <data format="tabular" name="outfile" label="$fname ${tool.name} Annotation on file ${on_string}"/>	 	
+  </outputs>
+
+	<help> 
+**What It Does**
+
+This program will run ConDel (compute the Consensus Deliteriousness Score) on the given SIFT and Polyphen2 scores, and optionally can include MutationAssessor score as well.
+
+**Further Information**
+
+ConDel website: http://http://bg.upf.edu/condel/home
+
+ConDel paper: http://download.cell.com/AJHG/pdf/PIIS0002929711000966.pdf
+
+**Input File**
+
+Must be a tab-delimited file with a 1-line header 
+
+**Output File**
+
+Two columns are appended to the end of your file, CONDEL_score_SP and CONDEL_pred_SP, containing the consenus score and prediction respectively. 
+If MutationAssessor score is also included column names will have _SPM suffix
+		
+</help>
+
+</tool>
+
+

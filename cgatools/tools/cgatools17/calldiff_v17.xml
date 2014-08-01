@@ -1,0 +1,323 @@
+<tool id="cg_calldiff" name="CallDiff" version="1.7.1">
+
+	<description>Compares two Complete Genomics variant files.</description> 
+
+	<requirements>		
+		<requirement type="package" version="1">cgatools17</requirement>
+	</requirements>
+
+	<command> <!--run executable-->
+		cgatools | head -1;
+		cgatools calldiff 
+		--beta
+		--reference ${crr.fields.crr_path}
+		--variantsA $inputA
+		--variantsB $inputB
+		$validation 
+		$diploid 
+		--locus-stats-column-count $column 
+		--max-hypothesis-count $hypothesis
+		--output-prefix cg_	
+		--reports `echo ${report1} ${report2} ${report3} ${report4} ${report5} | sed 's/  */,/g'` 	
+	</command>
+
+	<inputs>
+		<!--form field to select crr file-->
+		<param name="crr" type="select" label="Reference Build">
+			<options from_data_table="cg_anno_files" />
+		</param>
+
+		<!-- input files -->
+		<param name="inputA" type="data" format="cg_var,tabular" label="Var file A"></param>
+		<param name="inputB" type="data" format="cg_var,tabular" label="Var file B"></param>
+
+		<!-- reports -->			
+		<param name="report1" type="select" label="Create report SuperlocusOutput">
+			<option value="">no</option>
+			<option value="SuperlocusOutput">yes</option>
+		</param>
+		<param name="report2" type="select" label="Create report SuperlocusStats">
+			<option value="">no</option>
+			<option value="SuperlocusStats">yes</option>
+		</param>
+		<param name="report3" type="select" label="Create report LocusOutput">
+			<option value="">no</option>
+			<option value="LocusOutput">yes</option>
+		</param>
+		<param name="report4" type="select" label="Create report LocusStats">
+			<option value="">no</option>
+			<option value="LocusStats">yes</option>
+		</param>
+		<param name="report5" type="select" label="Create report VariantOutput" help="Both variant files annotated by comparison results.If the somatic output report is requested, file A is also annotated with the same score ranks as produced in that report.">
+			<option value="">no</option>
+			<option value="VariantOutput">yes</option>
+		</param>		
+	
+		<!-- parameters -->
+		<param name="diploid" type="select" label="Use diploid variant model" help="Uses varScoreEAF instead of varScoreVAF in somatic score computations. Also, uses diploid variant model instead of variable allele mixture model.">
+			<option value="">no</option>
+			<option value="--diploid">yes</option>
+		</param>
+			
+		<param name="column" type="integer" label="Number of columns for locus compare classification in the locus stats file (default 15)" value="15"/>
+		
+		<param name="hypothesis" type="integer" label="Maximum number of possible phasings to consider for a superlocus (default 32)" value="32"/>
+				  
+		<param name="validation" type="select" label="Reference cover validation" help="Turns on/off validation that all bases of a chromosome are covered by calls of the variant file.">
+			<option value="">on</option>
+			<option value="--no-reference-cover-validation">off</option>
+		</param>
+
+		<!-- prefix for output file so you dont have to manually rename history items -->
+		<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>	
+	</inputs>
+  
+	<outputs>
+		<data format="tabular" name="output1" from_work_dir="cg_SuperlocusOutput.tsv" label="$fname ${tool.name} on ${on_string}: SuperlocusOutput">
+			<filter>(report1 == 'SuperlocusOutput')</filter>
+		</data>
+		<data format="tabular" name="output2" from_work_dir="cg_SuperlocusStats.tsv" label="$fname ${tool.name} on ${on_string}: SuperlocusStats">
+			<filter>(report2 == 'SuperlocusStats')</filter>
+		</data>
+		<data format="tabular" name="output3" from_work_dir="cg_LocusOutput.tsv" label="$fname ${tool.name} on ${on_string}: LocusOutput">
+			<filter>(report3 == 'LocusOutput')</filter>
+		</data>
+		<data format="tabular" name="output4" from_work_dir="cg_LocusStats.tsv" label="$fname ${tool.name} on ${on_string}: LocusStats">
+			<filter>(report4 == 'LocusStats')</filter>
+		</data>
+		<data format="tabular" name="output5a" from_work_dir="cg_VariantsA.tsv" label="$fname ${tool.name} on ${on_string}: VariantsA">
+			<filter>(report5 == 'VariantOutput')</filter>
+		</data>
+		<data format="tabular" name="output5b" from_work_dir="cg_VariantsB.tsv" label="$fname ${tool.name} on ${on_string}: VariantsB">
+			<filter>(report5 == 'VariantOutput')</filter>
+		</data>  	
+	</outputs>
+
+	<tests>
+		<test>
+        	<param name="inputA" value="HCC1187_T_chr22.tsv" />
+			<param name="inputA" value="HCC1187_N_chr22.tsv" /> 
+        	<param name="crr" value="hg18" />
+        	<param name="report1" value="SuperlocusOutput" />
+			<param name="report2" value="" />
+			<param name="report3" value="" />
+			<param name="report4" value="" />
+			<param name="report5" value="" />
+        	<param name="diploid" value="" />
+			<param name="column" value="15" />
+			<param name="hypothesis" value="" />			
+        	<output name="output1" file="HCC1187_chr22_SuperLocusOutput.tsv" />     
+		</test>
+	</tests>
+
+	<help>
+**What it does**
+
+This tool compares two Complete Genomics variant files.
+
+**cgatools 1.7.1 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+		COMMAND NAME
+		  calldiff - Compares two Complete Genomics variant files.
+		
+		DESCRIPTION
+		  Compares two Complete Genomics variant files. Divides the genome up into 
+		  superloci of nearby variants, then compares the superloci. Also refines the
+		  comparison to determine per-call or per-locus comparison results.
+				
+		  Comparison results are usually described by a semi-colon separated string, 
+		  one per allele. Each allele's comparison result is one of the following 
+		  classifications:
+				
+		    ref-identical   The alleles of the two variant files are identical, and
+		                    they are consistent with the reference.
+		    alt-identical   The alleles of the two variant files are identical, and
+		                    they are inconsistent with the reference.
+		    ref-consistent  The alleles of the two variant files are consistent, 
+		                    and they are consistent with the reference.
+		    alt-consistent  The alleles of the two variant files are consistent, 
+		                    and they are inconsistent with the reference.
+		    onlyA           The alleles of the two variant files are inconsistent, 
+		                    and only file A is inconsistent with the reference.
+		    onlyB           The alleles of the two variant files are inconsistent, 
+		                    and only file B is inconsistent with the reference.
+		    mismatch        The alleles of the two variant files are inconsistent, 
+		                    and they are both inconsistent with the reference.
+		    phase-mismatch  The two variant files would be consistent if the 
+		                    hapLink field had been empty, but they are 
+		                    inconsistent.
+		    ploidy-mismatch The superlocus did not have uniform ploidy.
+				
+		  In some contexts, this classification is rolled up into a simplified 
+		  classification, which is one of "identical", "consistent", "onlyA", 
+		  "onlyB", or "mismatch".
+				
+		  A good place to start looking at the results is the superlocus-output file.
+		  It has columns defined as follows:
+				
+		    SuperlocusId   An identifier given to the superlocus.
+		    Chromosome     The name of the chromosome.
+		    Begin          The 0-based offset of the start of the superlocus.
+		    End            The 0-based offset of the base one past the end of the 
+		                   superlocus.
+		    Classification The match classification of the superlocus.
+		    Reference      The reference sequence.
+		    AllelesA       A semicolon-separated list of the alleles (one per 
+		                   haplotype) for variant file A, for the phasing with the 
+		                   best comparison result.
+		    AllelesB       A semicolon-separated list of the alleles (one per 
+		                   haplotype) for variant file B, for the phasing with the 
+		                   best comparison result.
+				
+		  The locus-output file contains, for each locus in file A and file B that is
+		  not consistent with the reference, an annotated set of calls for the locus.
+		  The calls are annotated with the following columns:
+				
+		    SuperlocusId            The id of the superlocus containing the locus.
+		    File                    The variant file (A or B).
+		    LocusClassification     The locus classification is determined by the 
+		                            varType column of the call that is inconsistent
+		                            with the reference, concatenated with a 
+		                            modifier that describes whether the locus is 
+		                            heterozygous, homozygous, or contains no-calls.
+		                            If there is no one variant in the locus (i.e., 
+		                            it is heterozygous alt-alt), the locus 
+		                            classification begins with "other".
+		    LocusDiffClassification The match classification for the locus. This is
+		                            defined to be the best of the comparison of the
+		                            locus to the same region in the other file, or 
+		                            the comparison of the superlocus.
+				
+		  The somatic output file contains a list of putative somatic variations of 
+		  genome A. The output includes only those loci that can be classified as 
+		  snp, del, ins or sub in file A, and are called reference in the file B. 
+		  Every locus is annotated with the following columns:
+				
+		    VarCvgA                 The totalReadCount from file A for this locus 
+		                            (computed on the fly if file A is not a 
+		                            masterVar file).
+		    VarScoreA               The varScoreVAF from file A, or varScoreEAF if 
+		                            the "--diploid" option is used.
+		    RefCvgB                 The maximum of the uniqueSequenceCoverage 
+		                            values for the locus in genome B.
+		    RefScoreB               Minimum of the reference scores of the locus in
+		                            genome B.
+		    SomaticCategory         The category used for determining the 
+		                            calibrated scores and the SomaticRank.
+		    VarScoreACalib          The calibrated variant score of file A, under 
+		                            the model selected by using or not using the 
+		                            "--diploid" option, and corrected for the count
+		                            of heterozygous variants observed in this 
+		                            genome. See user guide for more information.
+		    VarScoreBCalib          The calibrated reference score of file B, under
+		                            the model selected by using or not using the 
+		                            "--diploid" option, and corrected for the count
+		                            of heterozygous variants observed in this 
+		                            genome. See user guide for more information.
+		    SomaticRank             The estimated rank of this somatic mutation, 
+		                            amongst all true somatic mutations within this 
+		                            SomaticCategory. The value is a number between 
+		                            0 and 1; a value of 0.012 means, for example, 
+		                            that an estimated 1.2% of the true somatic 
+		                            mutations in this somaticCategory have a 
+		                            somaticScore less than the somaticScore for 
+		                            this mutation. See user guide for more 
+		                            information.
+		    SomaticScore            An integer that provides a total order on 
+		                            quality for all somatic mutations. It is equal 
+		                            to -10*log10( P(false)/P(true) ), under the 
+		                            assumption that this genome has a rate of 
+		                            somatic mutation equal to 1/Mb for 
+		                            SomaticCategory snp, 1/10Mb for SomaticCategory
+		                            ins, 1/10Mb for SomaticCategory del, and 1/20Mb
+		                            for SomaticCategory sub. The computation is 
+		                            based on the assumptions described in the user 
+		                            guide, and is affected by choice of variant 
+		                            model selected by using or not using the 
+		                            "--diploid" option.
+		    SomaticQuality          Equal to VQHIGH for all somatic mutations where
+		                            SomaticScore &gt;= -10. Otherwise, this column is 
+		                            empty.
+				
+		OPTIONS
+		  -h [ --help ] 
+		      Print this help message.
+		
+		  --reference arg
+		      The input crr file.
+		
+		  --variantsA arg
+		      The "A" input variant file.
+		
+		  --variantsB arg
+		      The "B" input variant file.
+		
+		  --output-prefix arg
+		      The path prefix for all output reports.
+		
+		  --reports arg (=SuperlocusOutput,SuperlocusStats,LocusOutput,LocusStats)
+		      Comma-separated list of reports to generate. (Beware any reports whose 
+		      name begins with "Debug".) A report is one of:
+		        SuperlocusOutput      Report for superlocus classification.
+		        SuperlocusStats       Report for superlocus classification stats.
+		        LocusOutput           Report for locus classification.
+		        LocusStats            Report for locus stats.
+		        VariantOutput         Both variant files annotated by comparison 
+		                              results.If the somatic output report is 
+		                              requested, file A is also annotated with the 
+		                              same score ranks as produced in that report.
+		        SomaticOutput         Report for the list of simple variations that
+		                              are present only in file "A", annotated with 
+		                              the score that indicates the probability of 
+		                              the variation being truly somatic. Requires 
+		                              beta, genome-rootA, and genome-rootB options 
+		                              to be provided as well. Note: generating this
+		                              report slows calldiff by 10x-20x.
+		        DebugCallOutput       Report for call classification.
+		        DebugSuperlocusOutput Report for debug superlocus information.
+		        DebugSomaticOutput    Report for distribution estimates used for 
+		                              somatic rescoring. Only produced if 
+		                              SomaticOutput is also turned on.
+		
+		  --diploid 
+		      Uses varScoreEAF instead of varScoreVAF in somatic score computations. 
+		      Also, uses diploid variant model instead of variable allele mixture 
+		      model.
+		
+		  --locus-stats-column-count arg (=15)
+		      The number of columns for locus compare classification in the locus 
+		      stats file.
+		
+		  --max-hypothesis-count arg (=32)
+		      The maximum number of possible phasings to consider for a superlocus.
+		
+		  --no-reference-cover-validation 
+		      Turns off validation that all bases of a chromosome are covered by 
+		      calls of the variant file.
+		
+		  --genome-rootA arg
+		      The "A" genome directory, for example /data/GS00118-DNA_A01; this 
+		      directory is expected to contain ASM/REF and ASM/EVIDENCE 
+		      subdirectories.
+		
+		  --genome-rootB arg
+		      The "B" genome directory.
+		
+		  --calibration-root arg
+		      The directory containing calibration data. For example, there should 
+		      exist a file calibration-root/0.0.0/metrics.tsv.
+		
+		  --beta 
+		      This flag enables the SomaticOutput report, which is beta 
+		      functionality.
+		
+		SUPPORTED FORMAT_VERSION
+		  0.3 or later
+	</help>
+</tool>

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<tool_dependency>
+	<package name="cgatools" version="1.7"> 
+        <install version="1.0">
+            <actions>                				
+                <action type="download_by_url">http://sourceforge.net/projects/cgatools/files/1.7.1/cgatools-1.7.1.5-linux_binary-x86_64.tar.gz</action>
+				<action type="shell_command"> chmod a+x bin/cgatools</action>
+                <action type="move_file">
+                	<source>bin/cgatools</source>
+                	<destination>$INSTALL_DIR/bin</destination>
+                </action>	    
+				<action type="set_environment">
+                    <environment_variable name="PATH" action="prepend_to">$INSTALL_DIR/bin</environment_variable>
+                    <environment_variable name="PATH" action="prepend_to">$REPOSITORY_INSTALL_DIR</environment_variable>
+                </action>            	               			
+            </actions>
+        </install>
+        <readme>
+			Downloads and installs the cgatools binary. 
+        </readme>
+    </package>      
+</tool_dependency>
+

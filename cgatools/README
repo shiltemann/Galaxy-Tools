@@ -1,0 +1,38 @@
+installation instructions cgatools:
+
+
+reference data
+------------------------
+   Get .crr files from CG ftp site:
+      - ftp://ftp.completegenomics.com/ReferenceFiles/build36.crr
+      - ftp://ftp.completegenomics.com/ReferenceFiles/build37.crr
+  
+   Get calibration root file:
+      - ftp://ftp.completegenomics.com/ScoreCalibrationFiles/var-calibration-v2.tgz
+
+   Get other reference file from CG ftp site:
+      - ftp://ftp.completegenomics.com/AnnotationFiles/gene36.tsv.gz
+      - ftp://ftp.completegenomics.com/AnnotationFiles/rmsk36.tsv.gz
+      - ftp://ftp.completegenomics.com/AnnotationFiles/segdup36.tsv.gz
+      - ftp://ftp.completegenomics.com/AnnotationFiles/gene37.tsv.gz
+      - ftp://ftp.completegenomics.com/AnnotationFiles/rmsk37.tsv.gz
+      - ftp://ftp.completegenomics.com/AnnotationFiles/segdup37.tsv.gz
+
+
+   And unzip them to desired location.
+
+
+   Adjust cgatools.loc file (included in repository) to reflect the locations of the reference files you dowloaded.
+
+
+datatypes
+------------------------
+
+ <!-- Start Complete Genomics Datatypes -->
+    <datatype extension="cg_var" type="galaxy.datatypes.completegenomics:CG_Var" display_in_upload="true" />
+    <datatype extension="cg_mastervar" type="galaxy.datatypes.completegenomics:CG_MasterVar" display_in_upload="true" />
+    <datatype extension="cg_gene" type="galaxy.datatypes.completegenomics:CG_Gene" display_in_upload="true" />
+ <!-- End Complete Genomics Datatypes -->
+
+
+

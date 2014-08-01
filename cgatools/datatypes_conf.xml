@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<datatypes>
+  <datatype_files>
+    <datatype_file name="completegenomics.py"/>
+  </datatype_files>
+
+  <registration>
+    <!-- 
+      Copy the following section to datatypes_conf.xml file in your Galaxy distribution if you are adding Complete Genomics tools manually to your Galaxy instance
+    -->
+    <!-- Start Complete Genomics Datatypes -->
+    <datatype extension="cg_var" type="galaxy.datatypes.completegenomics:CG_Var" display_in_upload="true" />
+    <datatype extension="cg_mastervar" type="galaxy.datatypes.completegenomics:CG_MasterVar" display_in_upload="true" />
+    <datatype extension="cg_gene" type="galaxy.datatypes.completegenomics:CG_Gene" display_in_upload="true" />
+    <!-- End Complete Genomics Datatypes -->
+    <!-- End of copied section -->
+  </registration>
+  <sniffers>
+  </sniffers>
+</datatypes>

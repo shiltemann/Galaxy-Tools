@@ -1,0 +1,79 @@
+<tool id="crr2fasta" name="crr-2-fasta" version="1.7.1">
+	<description> Convert fasta sequences into a single reference crr file </description>
+
+	<requirements>		
+		<requirement type="package" version="1">cgatools17</requirement>
+	</requirements>
+	
+	<command>
+		cgatools | head -1;
+		cgatools crr2fasta 
+		#if $refcrr.reference == "custom":
+		--input $refcrr.customcrr
+		#else:
+		--input ${refcrr.reffile.fields.crr_path} 		 
+		#end if			
+		--output $output 
+		--line-width $linewidth	
+	</command>
+
+	<inputs>
+		<conditional name="refcrr">
+			<param name="reference" type="select" label="Reference">
+				<option value="builtin" > Built-in Reference CRR </option>
+				<option value="custom"> Custom CRR file </option>						
+			</param>
+			<when value="builtin">
+				<param name="reffile" type="select" label="Reference">
+					<options from_data_table="cg_anno_files" />								
+				</param>
+			</when>
+			<when value="custom">
+				<param name="customcrr" type="data" format="crr" label="Select custom crr file" />
+			</when>
+		</conditional>
+
+		<param name="linewidth" type="text" label="linewidth" size="15" value="50" />
+		<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>			
+	</inputs>
+
+	<outputs>
+		<data format="txt" name="output" label="$fname ${tool.name} on ${on_string}"/>
+	</outputs>
+
+	<help> 
+	
+**What it does**
+
+This tool converts reference CRR files into the FASTA file format.
+
+**cgatools 1.7.1 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-release-notes.pdf
+
+**Command line reference**::
+	
+	COMMAND NAME
+		crr2fasta - Converts a crr reference file to the fasta format.
+
+	OPTIONS
+	  -h [ --help ] 
+		    Print this help message.
+
+	  --input arg
+		    The input crr file (may be passed in as argument at the end of the 
+		    command).
+
+	  --output arg (=STDOUT)
+		    The output fasta file (may be omitted for stdout).
+
+	  --line-width arg (=50)
+		    The maximum width of a line of sequence.
+
+
+	</help>
+</tool>
+
+

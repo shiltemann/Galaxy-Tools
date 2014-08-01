@@ -1,0 +1,196 @@
+<tool id="cg_join" name="Join" version="1.7.1">
+
+	<description>Join two tsv files based on equal fields or overlapping regions.</description> 
+
+	<requirements>		
+		<requirement type="package" version="1">cgatools17</requirement>
+	</requirements>
+
+	<command> 
+		cgatools | head -1;
+		cgatools join --beta 
+		--input $inputA 
+		--input $inputB 
+		--output $output 
+		--output-mode $outmode 
+		$dump 
+		--select $col
+		#for $m in $matches 
+			--match ${m.match}
+		#end for
+		#if $range_overlap.range == 'yes'
+			#for $o in $range_overlap.overlaps 
+				--overlap ${o.overlap}
+			#end for
+			--overlap-mode $range_overlap.overlapmode
+			--overlap-fraction-A $range_overlap.fractionA
+			--boundary-uncertainty-A $range_overlap.boundaryA
+			--overlap-fraction-B $range_overlap.fractionB
+			--boundary-uncertainty-B $range_overlap.boundaryB
+		#end if
+	</command>
+
+  
+	<inputs>
+		<param name="inputA" type="data" format="tabular" label="Select input file A "/>  
+		<param name="inputB" type="data" format="tabular" label="Select input file B "/>
+		<param name="col" type="text" value="A.*,B.*" size="40" label="Specify columns for output" help="The default value A.*,B.* prints all columns from both files, other selections enter in the format A.col_name1,A.col_name3,B.col_name1" />
+		
+		<param name="outmode" type="select" label="Select output mode">
+			<option value="full" selected="true">full (1 line for each match of records in A and B)</option>
+			<option value="compact">compact (1 line for each record in A, joining multiple records in B by semicolon)</option>
+			<option value="compact-pct">compact-pct (same as compact, annotated with % overlap)</option>
+		</param>
+
+		<param name="dump" type="select" label="Select records to print">
+			<option value="--always-dump" selected="true">print all records of A even if not matched in B</option>
+			<option value="">print only records of A that are matched in B</option>
+		</param>
+
+		<repeat name="matches" title="Exact match column">
+			<param name="match" type="text" size="40" label="Enter column:column" help="Enter column_from_A:column_from_B, e.g. chromosome:chromosome"/>
+		</repeat>
+    
+		<conditional name="range_overlap">
+			<param name="range" type="select" label="Do you want to match columns by overlapping range?">
+				<option value="no">no</option>
+				<option value="yes">yes</option>
+			</param>
+			<when value="no">
+				<!-- no options -->
+			</when>
+			<when value="yes">
+				<repeat name="overlaps" title="Range column">
+					<param name="overlap" type="text" size="40" label="Enter column&#91;,column&#93;:column&#91;,column&#93;" help="Enter range_start_from_A&#91;,range_stop_from_A&#93;:range_start_from_B&#91;,range_stop_from_B&#93;, e.g. begin,end:begin,end (overlapping range of positions) or begin,end:position"/>
+				</repeat>
+
+				<param name="overlapmode" type="select" label="Select overlap mode">
+					<option value="strict" selected="true">strict (overlap if A.begin&lt;B.end and B.begin&gt;A.end)</option>
+					<option value="allow-abutting-points">allow-abutting-points (overlap if A.begin&lt;B.end and B.begin&gt;A.end, or if A.begin&lt;=B.end and B.begin&lt;=A.end and either A or B has zero length.)</option>
+				</param>
+
+				<param name="fractionA" type="integer" value="0" label="Minimum fraction of A region overlap " />
+				<param name="boundaryA" type="integer" value="0" label="Boundary uncertainty for A for overlap filtering " help="Records failing the following boundary-uncertainty calculation are not included in the output: overlap length >= overlap-fraction-A * (A-range-length - boundary-uncertainty-A)"/>
+				
+				<param name="fractionB" type="integer" value="0" label="Minimum fraction of B region overlap " />
+				<param name="boundaryB" type="integer" value="0" label="Boundary uncertainty for overlap filtering "  help="Records failing the following boundary-uncertainty calculation are not included in the output: overlap length >= overlap-fraction-B * (B-range-length - boundary-uncertainty-B)"/>
+			</when>
+		</conditional>
+
+		<!-- prefix for output file so you dont have to manually rename history items -->
+		<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>	
+
+	</inputs>
+  
+	<outputs>
+		<data format="tabular" name="output" label="$fname ${tool.name} on data ${on_string}" />
+	</outputs>
+
+
+	<help>
+  
+**What it does**
+
+This tool joins two tab-delimited files based on equal fields or overlapping regions.
+
+**cgatools 1.7.1 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+		COMMAND NAME
+		  join - Joins two tab-delimited files based on equal fields or overlapping regions.
+		
+		DESCRIPTION
+		  Joins two tab-delimited files based on equal fields or overlapping regions.
+		  By default, an output record is produced for each match found between file 
+		  A and file B, but output format can be controlled by the --output-mode 
+		  parameter.
+		
+		OPTIONS
+		  -h [ --help ] 
+		      Print this help message.
+		
+		  --beta 
+		      This is a beta command. To run this command, you must pass the --beta 
+		      flag.
+		
+		  --input arg
+		      File name to use as input (may be passed in as arguments at the end of 
+		      the command), or omitted for stdin). There must be exactly two input 
+		      files to join. If only one file is specified by name, file A is taken 
+		      to be stdin and file B is the named file. File B is read fully into 
+		      memory, and file A is streamed. File A's columns appear first in the 
+		      output.
+		
+		  --output arg (=STDOUT)
+		      The output file name (may be omitted for stdout).
+		
+		  --match arg
+		      A match specification, which is a column from A and a column from B 
+		      separated by a colon.
+		
+		  --overlap arg
+		      Overlap specification. An overlap specification consists of a range 
+		      definition for files A and B, separated by a colon. A range definition 
+		      may be two columns, in which case they are interpreted as the beginning
+		      and end of the range. Or it may be one column, in which case the range 
+		      is defined as the 1-base range starting at the given value. The records
+		      from the two files must overlap in order to be considered for output. 
+		      Two ranges are considered to overlap if the overlap is at least one 
+		      base long, or if one of the ranges is length 0 and the ranges overlap 
+		      or abut. For example, "begin,end:offset" will match wherever end-begin 
+		      &gt; 0, begin&lt;offset+1, and end&gt;offset, or wherever end-begin = 0, 
+		      begin&lt;=offset+1, and end&gt;=offset.
+
+
+		  -m [ --output-mode ] arg (=full)
+		      Output mode, one of the following:
+		        full        Print an output record for each match found between 
+		                    file A and file B.
+		        compact     Print at most one record for each record of file A, 
+		                    joining the file B values by a semicolon and 
+		                    suppressing repeated B values and empty B values.
+		        compact-pct Same as compact, but for each distinct B value, 
+		                    annotate with the percentage of the A record that is 
+		                    overlapped by B records with that B value. Percentage 
+		                    is rounded up to nearest integer.
+		
+		  --overlap-mode arg (=strict)
+		      Overlap mode, one of the following:
+		        strict                Range A and B overlap if A.begin &lt; B.end and 
+		                              B.begin &lt; A.end.
+		        allow-abutting-points Range A and B overlap they meet the strict 
+		                              requirements, or if A.begin &lt;= B.end and 
+		                              B.begin &lt;= A.end and either A or B has zero 
+		                              length.
+
+		  --select arg (=A.*,B.*)
+		      Set of fields to select for output.
+		
+		  -a [ --always-dump ] 
+		      Dump every record of A, even if there are no matches with file B.
+		
+		  --overlap-fraction-A arg (=0)
+		      Minimum fraction of A region overlap for filtering output.
+		
+		  --boundary-uncertainty-A arg (=0)
+		      Boundary uncertainty for overlap filtering. Specifically, records 
+		      failing the following predicate are filtered away: overlap &gt;= 
+		      overlap-fraction-A * ( A-range-length - boundary-uncertainty-A )
+		
+		  --overlap-fraction-B arg (=0)
+		      Minimum fraction of B region overlap for filtering output.
+		
+		  --boundary-uncertainty-B arg (=0)
+		      Boundary uncertainty for overlap filtering. Specifically, records 
+		      failing the following predicate are filtered away: overlap &gt;= 
+		      overlap-fraction-B * ( B-range-length - boundary-uncertainty-B )
+
+		SUPPORTED FORMAT_VERSION
+		  Any
+	</help>
+</tool>

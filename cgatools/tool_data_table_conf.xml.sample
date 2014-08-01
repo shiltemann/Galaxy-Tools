@@ -1,0 +1,5 @@
+<!-- CGATools annotation files -->
+<table name="cg_anno_files" comment_char="#">
+<columns>value, dbkey, name, crr_path, repmask_path, genedata_path, segdup_path, calibration_root</columns>
+<file path="tool-data/cgatools.loc" /> 
+</table>

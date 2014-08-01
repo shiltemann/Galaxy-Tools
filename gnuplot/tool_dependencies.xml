@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<tool_dependency>
+	 <!-- set environment variable so that toolwrapper can pass script location to shell script -->
+	<set_environment version="1.0">
+        <environment_variable name="GNUPLOT_SCRIPT_PATH" action="set_to">$REPOSITORY_INSTALL_DIR</environment_variable>               
+    </set_environment>
+    
+	<package name="gnuplot" version="4.6.3"> 
+        <install version="1.0">
+            <actions>          
+            	<!-- download_by_url action will download, unpack, and cd's into dir -->
+            	<action type="download_by_url">http://sourceforge.net/projects/gnuplot/files/gnuplot/4.6.3/gnuplot-4.6.3.tar.gz </action>
+				<action>./configure --prefix=`pwd`</action>
+                <action type="shell_command"> make</action>  
+                <action type="shell_command"> make install</action> 
+                <action type="move_file">
+                    <source>bin/gnuplot</source>
+                    <destination>$INSTALL_DIR/bin</destination>
+                </action>
+                <!-- prepend location of binary to PATH variable -->
+				<action type="set_environment">
+                        <environment_variable name="PATH" action="prepend_to">$INSTALL_DIR/bin</environment_variable>
+                </action>            	               			
+            </actions>
+        </install>
+        <readme>
+			Downloads and installs gnuplot version 4.6.3. 
+        </readme>
+    </package>      
+</tool_dependency>
+

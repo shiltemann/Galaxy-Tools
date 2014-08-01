@@ -1,0 +1,110 @@
+<tool id="cg_testvariants" name="TestVariants" version="1.7.1">
+
+	<description>Test for the presence of variants</description> 
+
+	<requirements>		
+		<requirement type="package" version="1">cgatools17</requirement>
+	</requirements>
+
+	<command> <!--run executable-->
+		cgatools | head -1;
+		cgatools testvariants
+		--beta
+		--reference ${crr.fields.crr_path}
+		--output $output
+		--input $listing
+		--variants 
+		#for $v in $file_types.varfiles <!--get each var/mastervar file-->
+			${v.input}
+		#end for
+	</command>
+  
+	<inputs>
+  	<!--form field to select crr file-->
+		<param name="crr" type="select" label="Reference Build">
+			<options from_data_table="cg_anno_files" />
+		</param>
+
+		<!--form fields to select variant list-->
+		<param name="listing" type="data" format="tabular" label="Select variant list"/>			
+
+		<!--conditional to select input file type-->
+		<conditional name="file_types">
+			<param name="file_type" type="select" label="Select the input file type">
+				<option value="var" selected="true">var files</option>
+				<option value="mastervar">mastervar files</option>
+			</param>
+			<when value="var">			
+				<repeat name="varfiles" title="Variant files">
+					<param name="input" type="data" format="cg_var" label="Dataset"/>
+				</repeat>
+			</when>
+			<when value="mastervar">						
+				<repeat name="varfiles" title="Variant files">
+					<param name="input" type="data" format="cg_mastervar" label="Dataset"/>				
+				</repeat>
+			</when>
+		</conditional>
+
+		<!-- prefix for output file so you dont have to manually rename history items -->
+		<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>	
+	</inputs>
+
+  
+	<outputs>
+		<data format="tabular" name="output" label="$fname ${tool.name} on ${on_string}"/>
+	</outputs>
+
+	<help>
+**What it does**
+
+This tool uses the cgatools testvariants to test variant or mastervar files for the presence of variants.
+
+**cgatools 1.7.1 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+		COMMAND NAME
+		  testvariants - Tests variant files for presence of variants.
+		
+		DESCRIPTION
+		  Tests variant files for presence of variants. The output is a tab-delimited
+		  file consisting of the columns of the input variants file, plus a column 
+		  for each assembly results file that contains a character code for each 
+		  allele. The character codes have meaning as follows:
+			
+		    0 This allele of this genome is consistent with the reference at this 
+		      locus but inconsistent with the variant.
+		    1 This allele of this genome has the input variant at this locus.
+		    N This allele of this genome has no-calls but is consistent with the 
+		      input variant.
+		
+		OPTIONS
+		  -h [ --help ] 
+		      Print this help message.
+		
+		  --beta 
+		      This is a beta command. To run this command, you must pass the --beta 
+		      flag.
+		
+		  --reference arg
+		      The reference crr file.
+		
+		  --input arg (=STDIN)
+		      The input variants to test for.
+		
+		  --output arg (=STDOUT)
+		      The output file (may be omitted for stdout).
+		
+		  --variants arg
+		      The input variant files (may be passed in as arguments at the end of 
+		      the command).
+		
+		SUPPORTED FORMAT_VERSION
+		  0.3 or later
+	</help>
+</tool>

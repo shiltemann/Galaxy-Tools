@@ -1,0 +1,130 @@
+<tool id="cg_listvariant" name="ListVariants" version="1.7.1">
+
+	<description>lists all variants present in var or masterVar file</description> 
+
+	<requirements>		
+		<requirement type="package" version="1">cgatools17</requirement>
+	</requirements>
+
+	<command> <!--run executable-->
+		cgatools | head -1;
+		cgatools listvariants
+		--beta
+		--reference ${crr.fields.crr_path}
+		--output $output
+		#if $include_list.listing == "yes" <!--only added when yes-->
+			--variant-listing $include_list.list
+		#end if
+		$longvar
+		--variants 
+		#for $v in $file_types.varfiles <!--get each var/mastervar file-->
+				${v.input}
+		#end for
+
+		
+	</command>
+
+	<inputs>
+	<!--form field to select crr file-->
+		<param name="crr" type="select" label="Reference genome (.crr file)">
+			<options from_data_table="cg_anno_files" />
+		</param>
+
+		<conditional name="file_types">
+			<param name="file_type" type="select" label="Select the input file type">
+				<option value="var" selected="true">var files</option>
+				<option value="mastervar">mastervar files</option>
+			</param>				  
+			<when value="var">			
+				<repeat name="varfiles" title="Variant files" min="1">
+					<param name="input" type="data" format="cg_var" label="Dataset"/>			
+				</repeat>				
+			</when>			
+			<when value="mastervar">	
+				<repeat name="varfiles" title="Variant files" min="1">
+					<param name="input" type="data" format="cg_mastervar" label="Dataset"/>
+				</repeat>					
+			</when>
+		</conditional>
+
+		<param name="longvar" type="select" label="List long variants?">
+			<option value="" selected="true">no</option>
+			<option value="--list-long-variants">yes</option>
+		</param>
+
+		<conditional name="include_list">
+			<param name="listing" type="select" label="Include variant listing?">
+				<option value="no" selected="true">no</option>
+				<option value="yes">yes</option>
+			</param>
+			<when value="yes">
+				<param name="list" type="data" format="tabular" label="Variant listing"/>
+			</when>
+		</conditional>
+		<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>		
+	</inputs>
+  
+	<outputs>
+		<data format="tabular" name="output" label="$fname ${tool.name} on ${on_string}"/>
+	</outputs>
+
+	<help>
+**What it does**
+
+This tool uses the cgatools listvariants to list all called variants present in the var or mastervar files.
+
+**cgatools 1.7.1 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+		COMMAND NAME
+		  listvariants - Lists the variants present in a variant file.
+
+		DESCRIPTION
+		  Lists all called variants present in the specified variant files, in a 
+		  format suitable for processing by the testvariants command. The output is a
+		  tab-delimited file consisting of the following columns:
+			 
+		    variantId  Sequential id assigned to each variant.
+		    chromosome The chromosome of the variant.
+		    begin      0-based reference offset of the beginning of the variant.
+		    end        0-based reference offset of the end of the variant.
+		    varType    The varType as extracted from the variant file.
+		    reference  The reference sequence.
+		    alleleSeq  The variant allele sequence as extracted from the variant 
+		               file.
+		    xRef       The xRef as extrated from the variant file.
+
+		OPTIONS
+		  -h [ --help ] 
+		      Print this help message.
+
+		  --beta 
+		      This is a beta command. To run this command, you must pass the --beta 
+		      flag.
+
+		  --reference arg
+		      The reference crr file.
+
+		  --output arg (=STDOUT)
+		      The output file (may be omitted for stdout).
+
+		  --variants arg
+		      The input variant files (may be positional args).
+
+		  --variant-listing arg
+		      The output of another listvariants run, to be merged in to produce the 
+		      output of this run.
+
+		  --list-long-variants 
+		      In addition to listing short variants, list longer variants as well 
+		      (10's of bases) by concatenating nearby calls.
+
+		SUPPORTED FORMAT_VERSION
+		  0.3 or later
+	</help>
+</tool>

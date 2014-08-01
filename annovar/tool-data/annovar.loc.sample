@@ -1,0 +1,6 @@
+#loc file for annovar tool
+#
+# <columns>value, dbkey, name, ANNOVAR_scripts, ANNOVAR_humandb</columns>
+
+#hg18	hg18	hg18 [Human Mar. 2006 (NCBI36/hg18)]	/path/to/annovarscripts	/path/to/humandb
+#hg19	hg19	hg19 [Human Feb. 2009 (GRCh37/hg19)]	/path/to/annovarscripts	/path/to/humandb	

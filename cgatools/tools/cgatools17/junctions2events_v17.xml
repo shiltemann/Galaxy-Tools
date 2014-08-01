@@ -1,0 +1,167 @@
+<tool id="junctions2events" name="Junctions2Events" version="1.7.1">
+	<description> Groups related junctions and annotates each group with information about the structural rearrangement (event) that these junctions represent </description>
+	  
+	<requirements>		
+		<requirement type="package" version="1">cgatools17</requirement>
+	</requirements>
+  	
+	<command>
+		cgatools | head -1;
+		cgatools junctions2events --beta 
+		--reference ${refs.fields.crr_path} 
+		--junctions $junctions 
+		#if $alljunctions
+			--all-junctions $alljunctions
+		#end if
+		--repmask-data ${refs.fields.repmask_path}
+		--gene-data ${refs.fields.genedata_path}
+		#if $more_options.options_type_selector == "more"
+			--regulatory-region-length $regreglen
+			--contained-genes-max-range $contgenmax
+			--max-related-junction-distance $maxreljdist
+			--max-pairing-distance $maxpairdist
+			--max-copy-target-length $maxcopylen
+			--max-simple-event-distance $maxsed
+			#if $more_options.mobelname
+				--mobile-element-names $mobelname
+			#end if
+			--max-distance-to-m-e $maxdisttome
+		#end if
+	</command>
+	
+	<inputs>
+		<!-- select reference  -->
+		<param name="refs" type="select" label="Reference Build">
+			<options from_data_table="cg_anno_files" />
+		</param>
+
+		<!-- select junction files  -->
+		<param name="junctions" type="data" format="tabular" label="Junctions file (allJunctions of highConfidenceJunction)"/>		
+		<param name="alljunctions" type="data" format="tabular" optional="true" label="Optional: allJunctions file"/>
+
+		<!-- advanced settings  -->
+		<conditional name="more_options">
+   			<param name="options_type_selector" type="select" label="Advanced Options">
+      			<option value="hide" selected="True">Less options</option>
+      			<option value="show">More options</option>
+   			</param>
+   			<when value="less">
+      			<!-- no options -->
+   			</when>
+   			<when value="show">
+     			<param name="regreglen"  	type="integer" value="7500" min="0" label="regulatory region length" help="Length of the region upstream of the gene that may contain regulatory sequence for the gene" />
+				<param name="contgenmax" 	type="integer" value="-1" min="0" label="contained genes max range" help="Maximum length of a copy or deletion event to annotate with all genes that overlap the copied or deleted segment. (Negative value causes all events to be annotated regardless of the length)" />
+		 		<param name="maxreljdist"  	type="integer" value="700" min="0" label="max related junctions distance" help="Junctions occurring within this distance are presumed to be related" />
+		 		<param name="maxpairdist" 	type="integer" value="10000000" min="0" label="max pairing distance" help="Maximum allowed distance between junction sides wshen searching for paired junctions caused by the same event." />
+				<param name="maxcopylen" 	type="integer" value="1000" min="0" label="max copy target length" help="Pairs of junctions will be classified as a copy event only if the length of the implied copy target region is below this threshold." />
+				<param name="maxsed" 		type="integer" value="10000000" min="0" label="max simple event distance" help="When given a choice of identifying an event as a mobile element copy or as a simple deletion/duplication, prefer the latter explanation if the length of the affected sequence is below this threshold" />
+				<param name="mobelname" 	type="select" multiple="true" display="checkboxes" label="mobile element names" help="Names of mobile elements that are known to be active and sometimes copy flanking 3' sequence" >
+					<option value="L1HS"> L1HS </option>
+					<option value="AluY"> AluY </option>
+					<option value="SVA">  SVA </option>
+				</param>
+				<param name="maxdisttome" 	type="integer" value="2000" min="0" label="max distance to ME" help="Maximum allowed distance from the junction side to the element when searching for a mobile element related to a junction" />
+	   		</when>
+		</conditional>
+
+		<!-- prefix for output file so you dont have to manually rename history items -->
+   		<param name="fname" type="text" value="" label="Prefix for your output file" help="Optional"/>	
+	</inputs>
+
+	<outputs>
+		<data format="tabular" name="annotatedjunctions" from_work_dir="AnnotatedJunctions.tsv" label="$fname AnnotatedJunctions file of ${tool.name} on ${on_string}"/>
+		<data format="tabular" name="events" from_work_dir="Events.tsv" label="$fname Events file of ${tool.name} on ${on_string}"/>
+	</outputs>
+
+	<help>
+	
+**What it does**  
+
+This tool searches for groups of related junctions and for every group 
+attempts to determine the event that caused the junctions.
+
+**cgatools 1.7.1 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.7.1/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+	COMMAND NAME
+		junctions2events - Groups and annotates junction calls by event type.
+
+
+	OPTIONS
+	  -h [ --help ] 
+			Print this help message.
+
+	  --beta 
+			This is a beta command. To run this command, you must pass the --beta 
+			flag.
+
+	  --reference arg
+			Reference file.
+
+	  --output-prefix arg
+			The path prefix for all output reports.
+
+	  --junctions arg
+			Primary input junction file.
+
+	  --all-junctions arg
+			Superset of the input junction file to use when searching for the 
+			related junctions. The default is to use only the junctions in the 
+			primary junction file.
+
+	  --repmask-data arg
+			The file that contains repeat masker data.
+
+	  --gene-data arg
+			The file that contains gene location data.
+
+	  --regulatory-region-length arg (=7500)
+			Length of the region upstream of the gene that may contain regulatory 
+			sequence for the gene. Junctions that connect this region to another 
+			gene will be annotated as a special kind of gene fusion.
+
+	  --contained-genes-max-range arg (=-1)
+			Maximum length of a copy or deletion event to annotate with all genes 
+			that overlap the copied or deleted segment. Negative value causes all 
+			events to be annotated regardless of the length.
+
+	  --max-related-junction-distance arg (=700)
+			Junctions occurring within this distance are presumed to be related.
+
+	  --max-pairing-distance arg (=10000000)
+			When searching for paired junctions caused by the same event, maximum 
+			allowed distance between junction sides.
+
+	  --max-copy-target-length arg (=1000)
+			Pairs of junctions will be classified as a copy event only if the 
+			length of the implied copy target region is below this threshold.
+
+	  --max-simple-event-distance arg (=10000000)
+			When given a choice of explaining an event as a mobile element copy or 
+			as a simple deletion/duplication, prefer the latter explanation if the 
+			length of the affected sequence if below this threshold.
+
+	  --mobile-element-names arg (=L1HS,SVA)
+			Comma-separated list of the names of the mobile elements that are known
+			to be active and sometimes copy flanking 3' sequence.
+
+	  --max-distance-to-m-e arg (=2000)
+			When searching for a mobile element related to a junction, maximum 
+			allowed distance from the junction side to the element.
+
+	  --max-related-junction-output arg (=100)
+			Maximum number of related junctions included into annotation field
+
+
+	SUPPORTED FORMAT_VERSION
+		1.5 or later
+
+	</help>
+</tool>
+
+

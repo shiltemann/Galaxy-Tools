@@ -1,0 +1,7 @@
+<!-- ANNOVAR files -->
+<tables>
+<table name="annovar_loc" comment_char="#">
+<columns>value, dbkey, name, ANNOVAR_scripts, ANNOVAR_humandb</columns>
+<file path="tool-data/annovar.loc" /> 
+</table>
+</tables>

@@ -1,0 +1,31 @@
+<tool id="hilbert" name="Hilbert Curve" >
+
+  <description> Visualisation for DWACSeq output </description>
+
+<requirements>
+    <requirement type="set_environment">DWACSEQ_SCRIPT_PATH</requirement>	    
+</requirements>
+  
+  <command interpreter="perl"> 
+  	hilbert.pl $inputfile $legend \$DWACSEQ_SCRIPT_PATH/legend.png
+  </command>
+ 
+  
+  <inputs>
+	<param name="inputfile" type="data" label="select input file" help="avg4hilbert output from DWACSeq tool"/>	
+	<param name="fprefix" type="text" value="" label="Optional: prefix for output file"/>	
+  </inputs>
+  
+   <outputs>  
+	<data format="png" name="hilbertplot" from_work_dir="picture.png" label="${fprefix} Hilbert plot ${on_string}"/>
+	<data format="png" name="legend"  label="${fprefix} Hilbert legend"/>	
+  </outputs>
+
+  <help>
+  
+
+**What it does**
+
+
+  </help>
+</tool>
